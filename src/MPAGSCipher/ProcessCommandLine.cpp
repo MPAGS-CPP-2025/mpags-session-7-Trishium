@@ -6,7 +6,8 @@
 
 bool processCommandLine(const std::vector<std::string>& cmdLineArgs,
                         bool& helpRequested, bool& versionRequested,
-                        std::string& inputFile, std::string& outputFile)
+                        std::string& inputFile, std::string& outputFile,
+                        bool& encrypt_or_decrypt, std::string& cipher_key)
 {
     // Status flag to indicate whether or not the parsing was successful
     bool processStatus{true};
@@ -19,7 +20,16 @@ bool processCommandLine(const std::vector<std::string>& cmdLineArgs,
             // Set the indicator and terminate the loop
             helpRequested = true;
             break;
-        } else if (cmdLineArgs[i] == "--version") {
+        }
+        else if (cmdLineArgs[i] == "-e" || cmdLineArgs[i] == "--encrypt") {
+            // Set the indicator
+            encrypt_or_decrypt = true;
+        }
+        else if (cmdLineArgs[i] == "-d" || cmdLineArgs[i] == "--decrypt") {
+            // Set the indicator
+            encrypt_or_decrypt = false;
+        } 
+        else if (cmdLineArgs[i] == "-v" || cmdLineArgs[i] == "--version") {
             // Set the indicator and terminate the loop
             versionRequested = true;
             break;
@@ -49,6 +59,20 @@ bool processCommandLine(const std::vector<std::string>& cmdLineArgs,
             } else {
                 // Got filename, so assign value and advance past it
                 outputFile = cmdLineArgs[i + 1];
+                ++i;
+            }
+        } else if (cmdLineArgs[i] == "-k" || cmdLineArgs[i] == "--key") {
+            // Handle providing a cipher key
+            // Next element is key unless "-k" or "--key" is the last argument
+            if (i == nCmdLineArgs - 1) {
+                std::cerr << "[error] -k|--key requires a cipher key argument"
+                          << std::endl;
+                // Set the flag to indicate the error and terminate the loop
+                processStatus = false;
+                break;
+            } else {
+                // Got filename, so assign value and advance past it
+                cipher_key = cmdLineArgs[i + 1];
                 ++i;
             }
         } else {
